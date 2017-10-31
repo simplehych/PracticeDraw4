@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Camera;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -72,15 +73,43 @@ public class Practice14FlipboardView extends View {
         int x = centerX - bitmapWidth / 2;
         int y = centerY - bitmapHeight / 2;
 
+        // 第一遍绘制：上半部分
         canvas.save();
+        canvas.clipRect(0, 0, getWidth(), centerY);
+        canvas.drawBitmap(bitmap, x, y, paint);
+        canvas.restore();
 
+//        canvas.save();
+//
+//        camera.save();
+//        camera.rotateX(degree);
+//        canvas.translate(centerX, centerY);
+//        camera.applyToCanvas(canvas);
+//        canvas.translate(-centerX, -centerY);
+//        camera.restore();
+//
+//        canvas.drawBitmap(bitmap, x, y, paint);
+//        canvas.restore();
+
+
+        canvas.save();
         camera.save();
+        if (degree < 90) {
+            canvas.clipRect(0, centerY, getWidth(), getHeight());
+        } else {
+            canvas.clipRect(0, 0, getWidth(), centerY);
+        }
+        Matrix matrix = new Matrix();
+        matrix.reset();
         camera.rotateX(degree);
-        canvas.translate(centerX, centerY);
-        camera.applyToCanvas(canvas);
-        canvas.translate(-centerX, -centerY);
+        /**
+         * 获取matrix应在Camera操作之后
+         */
+        camera.getMatrix(matrix);
         camera.restore();
-
+        matrix.preTranslate(-centerX, -centerY);
+        matrix.postTranslate(centerX, centerY);
+        canvas.concat(matrix);
         canvas.drawBitmap(bitmap, x, y, paint);
         canvas.restore();
     }
